@@ -9,7 +9,7 @@ public class Merge {
 		
 		long start = System.currentTimeMillis();
 		
-		PdfReader cartoes = new PdfReader("pdf/cartoes.pdf");
+		PdfReader cartoes = new PdfReader("pdf/personaliz_psi2019_1dia.pdf");
 		PdfReader frente  = new PdfReader("pdf/modelos/frente.pdf");
 		PdfReader verso   = new PdfReader("pdf/modelos/verso.pdf");
 		
@@ -21,7 +21,7 @@ public class Merge {
 		for (int i=1; i<= cartoes.getNumberOfPages(); i++) {
 			
 			if (i % 2 == 0)
-				saida.getUnderContent(i).addTemplate(par,0,-3);
+				saida.getUnderContent(i).addTemplate(par,0,-1);
 			else
 				saida.getUnderContent(i).addTemplate(impar,0,0);
 		    

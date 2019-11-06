@@ -1,2 +1,7 @@
 /bin/
 /target/
+
+# Ignorando PDFs
+/pdf/modelos/*.*
+/pdf/saida/*.*
+/pdf/*.*
