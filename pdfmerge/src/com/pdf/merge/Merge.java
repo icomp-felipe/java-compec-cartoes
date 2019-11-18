@@ -1,38 +1,129 @@
 package com.pdf.merge;
 
 import java.io.*;
+import com.itextpdf.text.*;
 import com.itextpdf.text.pdf.*;
 
 public class Merge {
 	
 	public static void main(String[] args) throws Exception {
 		
+		File cartoes = new File("pdf/personaliz_psi2019_1dia.pdf");
+		File frente = new File("pdf/modelos/frente.pdf");
+		File verso = new File("pdf/modelos/verso.pdf");
+		
+		File saida = new File("pdf/saida/saida.pdf");
+		
+		long runtime = merge(cartoes, frente, verso, saida,0,-1,0,0);
+		
+		System.out.println(":: Runtime: " + runtime);
+		
+	}
+	
+	/** Adiciona um background do arquivo 'frente' e um do 'verso' em todas as páginas ímpares e pares de 'entrada', respectivamente,
+	 *  e escreve o documento resultante em 'saida'. É possível também fazer ajustes de deslocamento vertical e horizontal em cada template
+	 *  via parâmetros 'offset'. Este método é compatível com qualquer configuração de página, portanto, para um melhor resultado, é
+	 *  recomendável que todos os documentos de entrada possuam as mesmas dimensões e orientação.
+	 *  @param entrada - PDF de entrada, todas as suas páginas serão adicionadas ao PDF de saída
+	 *  @param frente - PDF contendo o template das páginas frontais, será adicionado como background a todas as páginas ímpares (frente) do PDF de entrada
+	 *  @param verso - PDF contendo o template das páginas traseiras, será adicionado como background a todas as páginas pares (verso) do PDF de entrada
+	 *  @param saida - PDF resultante
+	 *  @param offset_x_frente - deslocamento horizontal do template 'frente'
+	 *  @param offset_y_frente - deslocamento vertical do template 'frente'
+	 *  @param offset_x_verso - deslocamento horizontal do template 'verso'
+	 *  @param offset_y_verso - deslocamento vertical do template 'verso'
+	 *  @throws IOException quando qualquer um dos arquivos não pode ser acessado
+	 *  @throws DocumentException quando há algum erro no processamento do PDF
+	 *  @return tempo de execução deste método (em ms) */
+	public static long merge(File entrada, File frente, File verso, File saida,
+			float offset_x_frente, float offset_y_frente, float offset_x_verso, float offset_y_verso) throws IOException, DocumentException {
+		
+		// Marca o tempo de início de execução
 		long start = System.currentTimeMillis();
 		
-		PdfReader cartoes = new PdfReader("pdf/personaliz_psi2019_1dia.pdf");
-		PdfReader frente  = new PdfReader("pdf/modelos/frente.pdf");
-		PdfReader verso   = new PdfReader("pdf/modelos/verso.pdf");
+		// Abrindo os arquivos de leitura
+		PdfReader reader_cartoes = new PdfReader(entrada.getAbsolutePath());
+		PdfReader reader_frente  = new PdfReader(frente .getAbsolutePath());
+		PdfReader reader_verso   = new PdfReader(verso  .getAbsolutePath());
 		
-		PdfStamper saida = new PdfStamper(cartoes, new FileOutputStream("pdf/saida/saida.pdf"));
+		// Abrindo o PDF de saída
+		PdfStamper pdf_saida = new PdfStamper(reader_cartoes, new FileOutputStream(saida));
 		
-		PdfImportedPage impar = saida.getImportedPage(frente,1);
-		PdfImportedPage par   = saida.getImportedPage(verso ,1);
+		// Recuperando a primeira página de cada template
+		PdfImportedPage impar = pdf_saida.getImportedPage(reader_frente,1);
+		PdfImportedPage par   = pdf_saida.getImportedPage(reader_verso ,1);
 		
-		for (int i=1; i<= cartoes.getNumberOfPages(); i++) {
+		// Copia todas as páginas de 'cartoes' para 'saida'...
+		for (int i=1; i<= reader_cartoes.getNumberOfPages(); i++) {
 			
+			// ...adicionando o background do 'verso', para páginas pares ou 
 			if (i % 2 == 0)
-				saida.getUnderContent(i).addTemplate(par,0,-1);
+				pdf_saida.getUnderContent(i).addTemplate(par,offset_x_verso,offset_y_verso);
+			
+			// ...'frente' para as páginas ímpares
 			else
-				saida.getUnderContent(i).addTemplate(impar,0,0);
+				pdf_saida.getUnderContent(i).addTemplate(impar,offset_x_frente,offset_y_frente);
 		    
 		}
 		
-		saida.close();
+		// Este método fecha TODOS os arquivos
+		pdf_saida.close();
 		
-		System.out.println(":: Runtime: " + (System.currentTimeMillis() - start) + " ms");
+		// Retorna o tempo de execução
+		return (System.currentTimeMillis() - start);
+	}
+	
+	/** Adiciona um background do arquivo 'template' em todas as páginas de 'entrada' e escreve o documento resultante em 'saida'.
+	 *  É possível também fazer ajustes de deslocamento vertical e horizontal do template via parâmetros 'offset'.
+	 *  Este método é compatível com qualquer configuração de página, portanto, para um melhor resultado, é
+	 *  recomendável que todos os documentos de entrada possuam as mesmas dimensões e orientação.
+	 *  @param entrada - PDF de entrada, todas as suas páginas serão adicionadas ao PDF de saída
+	 *  @param template - PDF contendo o template, será adicionado como background a todas as páginas do PDF de entrada
+	 *  @param saida - PDF resultante
+	 *  @param offset_x - deslocamento horizontal do template
+	 *  @param offset_y - deslocamento vertical do template
+	 *  @throws IOException quando qualquer um dos arquivos não pode ser acessado
+	 *  @throws DocumentException quando há algum erro no processamento do PDF
+	 *  @return tempo de execução deste método (em ms) */
+	public static long merge(File entrada, File template, File saida, float offset_x, float offset_y) throws IOException, DocumentException {
 		
-		split();
+		// Marca o tempo de início de execução
+		long start = System.currentTimeMillis();
 		
+		// Abrindo os arquivos de leitura
+		PdfReader reader_cartoes  = new PdfReader(entrada .getAbsolutePath());
+		PdfReader reader_template = new PdfReader(template.getAbsolutePath());
+		
+		// Abrindo o PDF de saída
+		PdfStamper pdf_saida = new PdfStamper(reader_cartoes, new FileOutputStream(saida));
+		
+		// Recuperando a primeira página do template
+		PdfImportedPage template_page = pdf_saida.getImportedPage(reader_template,1);
+		
+		// Copia todas as páginas de 'cartoes' para 'saida', adicionando o 'template' ao fundo
+		for (int i=1; i<= reader_cartoes.getNumberOfPages(); i++)
+			pdf_saida.getUnderContent(i).addTemplate(template_page,offset_x,offset_y);
+		
+		// Este método fecha TODOS os arquivos
+		pdf_saida.close();
+		
+		// Retorna o tempo de execução
+		return (System.currentTimeMillis() - start);
+	}
+	
+	
+	
+	
+	
+	public static long split(File pdf, File dir_saida) {
+		
+		// Marca o tempo de início de execução
+		long start = System.currentTimeMillis();
+		
+		
+		
+		// Retorna o tempo de execução
+		return (System.currentTimeMillis() - start);
 	}
 	
 	private static void split() throws Exception {
