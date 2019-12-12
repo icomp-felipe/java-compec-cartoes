@@ -8,15 +8,23 @@ public class Merge {
 	
 	public static void main(String[] args) throws Exception {
 		
-		File cartoes = new File("pdf/personaliz_psi2019_1dia.pdf");
-		File frente = new File("pdf/modelos/frente.pdf");
-		File verso = new File("pdf/modelos/verso.pdf");
+		File cartoes = new File("pdf/personal_etapa_3.pdf");
 		
-		File saida = new File("pdf/saida/saida.pdf");
+		File frente  = new File("pdf/modelos/psc2020_a3_frente.pdf");
+		File verso   = new File("pdf/modelos/psc2020_a3_verso.pdf");
 		
-		long runtime = merge(cartoes, frente, verso, saida,0,-1,0,0);
+		File saida = new File("pdf/saida/saida_etapa3.pdf");
 		
-		System.out.println(":: Runtime: " + runtime);
+		long runtime = merge(cartoes, frente, verso, saida,0,0,0,0);
+		
+		// File template = new File("pdf/modelos/psc2020_a4.pdf");
+		// long runtime = merge(cartoes, template, saida,5f,0);
+		
+		
+		
+		
+		
+		System.out.printf(":: Runtime: %sms\n", runtime);
 		
 	}
 	
