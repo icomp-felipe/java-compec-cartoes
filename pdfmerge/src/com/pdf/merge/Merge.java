@@ -128,7 +128,11 @@ public class Merge {
 		// Marca o tempo de início de execução
 		long start = System.currentTimeMillis();
 		
-		
+		try {
+			split();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 		
 		// Retorna o tempo de execução
 		return (System.currentTimeMillis() - start);
